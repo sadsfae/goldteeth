@@ -18,6 +18,7 @@ CRYPTO = {
 }
 POLL_INTERVAL = 30
 
+
 def get_crypto_price(cg_id, session):
     try:
         response = session.get("https://api.coingecko.com/api/v3/simple/price",
@@ -27,6 +28,7 @@ def get_crypto_price(cg_id, session):
     except (requests.RequestException, KeyError, ValueError) as e:
         print(f"Fetch failed ({type(e).__name__}: {e})")
         return None
+
 
 def get_stock_price(symbol, api_key, session):
     try:
@@ -42,6 +44,7 @@ def get_stock_price(symbol, api_key, session):
         print(f"Fetch failed ({type(e).__name__}: {e})")
         return None
 
+
 def crossed_threshold(price, last_price, target, check_above):
     """Return True if price just crossed the target threshold."""
     if last_price is None:
@@ -49,6 +52,7 @@ def crossed_threshold(price, last_price, target, check_above):
     if check_above:
         return price >= target and last_price < target
     return price <= target and last_price > target
+
 
 def get_audio_player():
     """Return available audio player command, or None if not found."""
@@ -58,9 +62,11 @@ def get_audio_player():
         return ["mplayer", "-loop", "0", "-nolirc", "-quiet"]
     return None
 
+
 def play_alert(wav, player_cmd):
     subprocess.Popen(player_cmd + [wav],
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
 
 def update_deques(now, price, price_history, min_prices, max_prices, cutoff):
     """Update price history and min/max deques, prune old entries."""
@@ -81,6 +87,7 @@ def update_deques(now, price, price_history, min_prices, max_prices, cutoff):
         if max_prices and max_prices[0][0] == old_time:
             max_prices.popleft()
 
+
 def check_volatility(price_history, min_prices, max_prices, time_mins, target_pct):
     """Check if volatility threshold is met. Returns (triggered, swing_pct) or (False, None)."""
     if not price_history:
@@ -100,6 +107,7 @@ def check_volatility(price_history, min_prices, max_prices, time_mins, target_pc
 
     swing_pct = (max_price - min_price) / min_price * 100
     return swing_pct >= target_pct, swing_pct
+
 
 def run_volatility_monitor(symbol, target_pct, time_mins, wav, player_cmd, fetch_price):
     """Run the volatility monitoring loop."""
@@ -135,6 +143,7 @@ def run_volatility_monitor(symbol, target_pct, time_mins, wav, player_cmd, fetch
 
         time.sleep(POLL_INTERVAL)
 
+
 def run_price_monitor(symbol, mode, target, wav, player_cmd, fetch_price):
     """Run the price threshold monitoring loop."""
     triggered = False
@@ -157,6 +166,7 @@ def run_price_monitor(symbol, mode, target, wav, player_cmd, fetch_price):
             last_price = price
 
         time.sleep(POLL_INTERVAL)
+
 
 def parse_args():
     if len(sys.argv) != 5:
@@ -199,6 +209,7 @@ def parse_args():
         sys.exit("Target price must be a number.")
     return symbol, mode, target, wav
 
+
 def main():
     player_cmd = get_audio_player()
     if not player_cmd:
@@ -215,9 +226,11 @@ def main():
 
     with requests.Session() as session:
         if cg_id:
-            fetch_price = lambda: get_crypto_price(cg_id, session)
+            def fetch_price():
+                return get_crypto_price(cg_id, session)
         else:
-            fetch_price = lambda: get_stock_price(symbol, api_key, session)
+            def fetch_price():
+                return get_stock_price(symbol, api_key, session)
 
         print(f"Monitoring {symbol_upper}...")
         if mode == 'vol':
@@ -236,6 +249,7 @@ def main():
                 run_price_monitor(symbol_upper, mode, target, wav, player_cmd, fetch_price)
         except KeyboardInterrupt:
             print("\nStopped.")
+
 
 if __name__ == "__main__":
     main()
