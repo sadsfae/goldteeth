@@ -1,4 +1,4 @@
-# Price Alert
+# Price Watch
 
 Monitors crypto/stock prices and plays an alert sound when target is reached.
 
