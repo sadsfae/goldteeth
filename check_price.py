@@ -16,7 +16,7 @@ CRYPTO = {
     'XMR': 'monero', 'MONERO': 'monero',
     'LTC': 'litecoin', 'LITECOIN': 'litecoin',
 }
-POLL_INTERVAL = 60
+POLL_INTERVAL = 30
 
 
 def get_crypto_price(cg_id, session):
