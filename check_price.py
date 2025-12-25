@@ -15,6 +15,8 @@ CRYPTO = {
     'XRP': 'ripple', 'RIPPLE': 'ripple',
     'XMR': 'monero', 'MONERO': 'monero',
     'LTC': 'litecoin', 'LITECOIN': 'litecoin',
+    'ZEC': 'zcash', 'ZCASH': 'zcash',
+    'ZAN': 'zano', 'ZANO': 'zano',
 }
 POLL_INTERVAL = 30
 
@@ -183,7 +185,15 @@ def run_price_monitor(symbol, mode, target, wav, player_cmd, fetch_price):
         time_str = time.strftime('%H:%M:%S')
 
         if price is not None:
-            print(f"{symbol}: ${price:,.2f} ({time_str})")
+            if target > 0:
+                pct_diff = abs(price - target) / target * 100
+                direction = "above" if price >= target else "below"
+                status = f"{pct_diff:.0f}% {direction} target"
+            else:
+                status = ""
+
+            print(f"{symbol}: ${price:,.2f} ({time_str}) {status}")
+
             crossed = crossed_threshold(price, last_price, target,
                                         mode == 'above')
             if not triggered and crossed:
