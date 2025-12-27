@@ -76,6 +76,7 @@ def get_stock_price(symbol, api_key, session):
 
 
 def crossed_threshold(price, last_price, target, check_above):
+    """Return True if price just crossed the target threshold."""
     if last_price is None:
         return price >= target if check_above else price <= target
     if check_above:
@@ -84,6 +85,7 @@ def crossed_threshold(price, last_price, target, check_above):
 
 
 def get_audio_player():
+    """Return available audio player command, or None if not found."""
     if shutil.which("mpv"):
         return ["mpv", "--loop=inf", "--really-quiet"]
     if shutil.which("mplayer"):
@@ -97,6 +99,7 @@ def play_alert(wav, player_cmd):
 
 
 def send_notification(title, message):
+    """Send a desktop notification using notify-send or osascript."""
     if shutil.which('notify-send'):
         subprocess.Popen(['notify-send', title, message],
                          stdout=subprocess.DEVNULL,
@@ -112,6 +115,7 @@ def send_notification(title, message):
 
 
 def update_deques(now, price, price_history, min_prices, max_prices, cutoff):
+    """Update price history and min/max deques, prune old entries."""
     price_history.append((now, price))
 
     while min_prices and min_prices[-1][1] > price:
@@ -131,6 +135,10 @@ def update_deques(now, price, price_history, min_prices, max_prices, cutoff):
 
 
 def check_volatility(price_history, min_prices, max_prices, target_pct):
+    """Check if volatility threshold met.
+
+    Returns (triggered, swing_pct) or (False, None).
+    """
     if len(price_history) < 2:
         return False, 0.0
 
@@ -159,6 +167,7 @@ def get_volatility_bar(pct, target_pct):
 
 def run_volatility_monitor(symbol, target_pct, time_mins, wav, player_cmd,
                            fetch_price):
+    """Run the volatility monitoring loop."""
     price_history, min_prices, max_prices = deque(), deque(), deque()
     triggered = False
 
@@ -205,6 +214,7 @@ def run_volatility_monitor(symbol, target_pct, time_mins, wav, player_cmd,
 
 
 def run_price_monitor(symbol, mode, target, wav, player_cmd, fetch_price):
+    """Run the price threshold monitoring loop."""
     triggered = False
     last_price = None
     blink_state = True
