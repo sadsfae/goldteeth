@@ -1,6 +1,6 @@
 # Price Watch
 
-[![Flake8 Lint](https://github.com/sadsfae/pricewatch/actions/workflows/flake8.yml/badge.svg)](https://github.com/sadsfae/pricewatch/actions/      workflows/flake8.yml)
+[![Flake8 Lint](https://github.com/sadsfae/pricewatch/actions/workflows/flake8.yml/badge.svg)](https://github.com/sadsfae/pricewatch/actions/workflows/flake8.yml)
 
 Monitors crypto/stock prices & volatility and plays an alert sound when target is reached.
 * It will also send a desktop notification on Linux or MAC OSX.
