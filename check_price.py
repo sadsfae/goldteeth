@@ -1,10 +1,12 @@
 import shutil
 import subprocess
 import time
-import requests
 import sys
 import os
 from collections import deque
+import threading
+import json
+import requests
 
 CRYPTO = {
     'BTC': 'bitcoin', 'BITCOIN': 'bitcoin',
@@ -32,47 +34,60 @@ BAR_FULL = '█'
 BAR_EMPTY = '░'
 BAR_WIDTH = 20
 
+current_price = None
+price_lock = threading.Lock()
+ws_thread = None
 
-def get_crypto_price(cg_id, session):
+
+def get_crypto_price_coingecko(cg_id):
     try:
         url = "https://api.coingecko.com/api/v3/simple/price"
         params = {'ids': cg_id, 'vs_currencies': 'usd'}
-        response = session.get(url, params=params, timeout=10)
+        response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         return response.json()[cg_id]['usd']
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 429:
-            print("Rate-limited by CoinGecko (HTTP 429). "
-                  "Try increasing POLL_INTERVAL.")
-            return None
-        print(f"Fetch failed (HTTPError: {e})")
-        return None
-    except (requests.RequestException, KeyError, ValueError) as e:
-        print(f"Fetch failed ({type(e).__name__}: {e})")
+    except Exception:
         return None
 
 
-def get_stock_price(symbol, api_key, session):
-    try:
-        url = f"https://api.polygon.io/v2/last/trade/{symbol.upper()}"
-        response = session.get(url, params={'apiKey': api_key}, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-        if data.get('status') != 'success':
-            status = data.get('status', 'unknown')
-            print(f"Fetch failed (API status: {status})")
-            return None
-        return data['last']['price']
-    except requests.exceptions.HTTPError as e:
-        if e.response and e.response.status_code == 429:
-            print("Rate-limited by Polygon (HTTP 429). "
-                  "Try increasing POLL_INTERVAL.")
-            return None
-        print(f"Fetch failed (HTTPError: {e})")
-        return None
-    except (requests.RequestException, KeyError, ValueError) as e:
-        print(f"Fetch failed ({type(e).__name__}: {e})")
-        return None
+def on_message(ws, message):
+    global current_price
+    data = json.loads(message)
+    if 'data' in data:
+        for trade in data['data']:
+            with price_lock:
+                current_price = trade['p']
+
+
+def on_error(ws, error):
+    print(f"WebSocket error: {error}")
+
+
+def on_close(ws, close_status_code, close_msg):
+    print("WebSocket closed")
+
+
+def on_open(ws, symbol):
+    ws.send(json.dumps({"type": "subscribe", "symbol": symbol}))
+
+
+def start_websocket(symbol, api_key):
+    import websocket
+    global ws_thread
+    ws_url = f"wss://ws.finnhub.io?token={api_key}"
+    ws = websocket.WebSocketApp(ws_url,
+                                on_open=lambda ws: on_open(ws, symbol),
+                                on_message=on_message,
+                                on_error=on_error,
+                                on_close=on_close)
+    ws_thread = threading.Thread(target=ws.run_forever)
+    ws_thread.daemon = True
+    ws_thread.start()
+
+
+def get_price():
+    with price_lock:
+        return current_price
 
 
 def crossed_threshold(price, last_price, target, check_above):
@@ -210,6 +225,9 @@ def run_volatility_monitor(symbol, target_pct, time_mins, wav, player_cmd,
                     print(f"{symbol}: ${price:,.2f} "
                           f"(vol {bar} / {time_mins}min) ({time_str})")
 
+        else:
+            print(f"{symbol}: No price data yet ({time_str})")
+
         time.sleep(POLL_INTERVAL)
 
 
@@ -277,6 +295,9 @@ def run_price_monitor(symbol, mode, target, wav, player_cmd, fetch_price):
                 triggered = True
             last_price = price
 
+        else:
+            print(f"{symbol}: No price data yet ({time_str})")
+
         time.sleep(POLL_INTERVAL)
 
 
@@ -291,9 +312,8 @@ def parse_args():
         print("")
         print("Examples:")
         print("  btc above 100000 alert.wav")
-        print("  eth below 3000 alert.wav")
-        print("  sol vol 0.001-1 alert.wav    (0.001% move in 1 min)")
-        print("  tsla above 400 alert.wav     (needs POLYGON_API_KEY)")
+        print("  slv below 61 alert.wav")
+        print("  tsla vol 0.5-5 alert.wav")
         sys.exit(1)
 
     symbol = sys.argv[1]
@@ -335,39 +355,46 @@ def main():
     symbol_upper = symbol.upper()
     cg_id = CRYPTO.get(symbol_upper)
 
-    if not cg_id:
-        api_key = os.getenv('POLYGON_API_KEY')
+    if cg_id:
+        def fetch_price():
+            return get_crypto_price_coingecko(cg_id)
+    else:
+        api_key = os.getenv('FINNHUB_API_KEY')
         if not api_key:
-            sys.exit("Error: POLYGON_API_KEY not set")
+            sys.exit("Error: FINNHUB_API_KEY environment variable not set")
 
-    with requests.Session() as session:
-        if cg_id:
-            def fetch_price():
-                return get_crypto_price(cg_id, session)
-        else:
-            def fetch_price():
-                return get_stock_price(symbol, api_key, session)
+        finnhub_symbol = symbol_upper
 
-        print(f"Monitoring {symbol_upper}...")
+        global current_price
+        current_price = None
+
+        start_websocket(finnhub_symbol, api_key)
+
+        time.sleep(2)
+
+        def fetch_price():
+            return get_price()
+
+    print(f"Monitoring {symbol_upper}...")
+    if mode == 'vol':
+        target_pct, time_mins = target
+        print(f"Alert on ±{target_pct:.4f}% change "
+              f"within {time_mins} minute{'s' if time_mins != 1 else ''}")
+    else:
+        direction = "above or at" if mode == 'above' else "below or at"
+        print(f"Alert when price goes {direction} ${target:,}")
+    print("Press Ctrl+C to stop monitoring.\n")
+
+    try:
         if mode == 'vol':
             target_pct, time_mins = target
-            print(f"Alert on ±{target_pct:.4f}% change "
-                  f"within {time_mins} minute{'s' if time_mins != 1 else ''}")
+            run_volatility_monitor(symbol_upper, target_pct, time_mins,
+                                   wav, player_cmd, fetch_price)
         else:
-            direction = "above or at" if mode == 'above' else "below or at"
-            print(f"Alert when price goes {direction} ${target:,}")
-        print("Press Ctrl+C to stop monitoring.\n")
-
-        try:
-            if mode == 'vol':
-                target_pct, time_mins = target
-                run_volatility_monitor(symbol_upper, target_pct, time_mins,
-                                       wav, player_cmd, fetch_price)
-            else:
-                run_price_monitor(symbol_upper, mode, target, wav,
-                                  player_cmd, fetch_price)
-        except KeyboardInterrupt:
-            print("\nStopped.")
+            run_price_monitor(symbol_upper, mode, target, wav,
+                              player_cmd, fetch_price)
+    except KeyboardInterrupt:
+        print("\nStopped.")
 
 
 if __name__ == "__main__":

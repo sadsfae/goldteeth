@@ -1,10 +1,15 @@
 # Price Watch
 
-Monitors crypto/stock prices & volatility and plays an alert sound when target is reached.
-   * It will also send a desktop notification on Linux or MAC OSX.
-   * Run via `python` in a terminal or use the optional GUI
-
 [![Flake8 Lint](https://github.com/sadsfae/pricewatch/actions/workflows/flake8.yml/badge.svg)](https://github.com/sadsfae/pricewatch/actions/workflows/flake8.yml)
+
+Monitors crypto/stock prices & volatility and plays an alert sound when target is reached.
+* It will also send a desktop notification on Linux or MAC OSX.
+* Run via `python` in a terminal or use the optional GUI
+
+> [!NOTE]
+> Crypto prices utilize CoinGecko open API.
+>
+> Stock prices utilize [Finnhub](https://finnhub.io/register) free API (email sign-up required)
 
 ## Usage
 
@@ -25,16 +30,16 @@ python check_price.py doge vol 5-15 alert.wav   # 5% move in 15 mins
 python check_price.py tsla vol 5-10 alert.wav   # 5% move in 10 mins (needs POLYGON_API_KEY)
 ```
 
-### Stocks (needs POLYGON_API_KEY)
-```
-export POLYGON_API_KEY="your_key"
+### Stocks
+* Requires a [Finnhub](https://finnhub.io/register) API key (Free, email signup only)
+```bash
+export FINNHUB_API_KEY="your_key_here"
 python check_price.py tsla above 400 alert.wav
 ```
 
-Get a free key at https://polygon.io
-
 ## Requirements
-- Python 3 with `requests`
+- Python 3 with `requests` or `python3-requests`
+- Python 3 with `websockets` or `python3-websockets` (Stocks only)
 - mpv or mplayer
 
 ### GUI
@@ -50,7 +55,7 @@ git clone https://github.com/sadsfae/pricewatch.git
 cd pricewatch
 ```
 
-### Copy .desktop file (optional)
+### Copy .desktop file (optional GUI)
 ```bash
 cat > pricewatch.desktop <<EOF
 [Desktop Entry]
@@ -66,7 +71,7 @@ Categories=Utility;Finance;
 EOF
 ```
 
-### Install it to your local applications folder (optional)
+### Install it to your local applications folder (optional GUI)
 ```bash
 mkdir -p ~/.local/share/applications/
 mv pricewatch.desktop ~/.local/share/applications/
