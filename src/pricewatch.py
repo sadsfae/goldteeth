@@ -69,6 +69,7 @@ def get_fallback_quote():
 
 
 def hours_until_market_open():
+    import pytz
     eastern = pytz.timezone('US/Eastern')
     now = datetime.datetime.now(eastern)
     weekday = now.weekday()
@@ -109,7 +110,6 @@ def on_open(ws, symbol):
 
 def start_websocket(symbol, key):
     import websocket
-    import pytz
     ws_url = f"wss://ws.finnhub.io?token={key}"
     ws = websocket.WebSocketApp(
         ws_url,
