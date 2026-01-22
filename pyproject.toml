@@ -23,9 +23,12 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/sadsfae/goldteeth"
-Repository = "https://github.com/sadsfae/goldteeth"
-Issues = "https://github.com/sadsfae/goldteeth/issues"
+Homepage = "https://github.com/sadsfae/pricewatch"
+Repository = "https://github.com/sadsfae/pricewatch"
+Issues = "https://github.com/sadsfae/pricewatch/issues"
+
+[project.scripts]
+goldteeth = "goldteeth:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -36,12 +39,13 @@ version_toml = ["pyproject.toml:project.version"]
 upload_to_pypi = true
 upload_to_release = true
 build_command = "pip install build && python -m build"
-
-[project.scripts]
-goldteeth = "goldteeth:main"
+commit_message = "chore(release): v{version} [skip ci]"
 
 [tool.ruff]
 line-length = 79
 indent-width = 4
 
 [tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
