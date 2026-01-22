@@ -1,3 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pricewatch"
+version = "0.1.7"
+description = "Monitors crypto/stock prices or volatility and plays an alert sound when a target is reached"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Will Foster (sadsfae)", email = "wfoster@pm.me" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/sadsfae/pricewatch"
+Repository = "https://github.com/sadsfae/pricewatch"
+Issues = "https://github.com/sadsfae/pricewatch/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Configuration for python-semantic-release to automate releases on master branch
+[tool.semantic_release]
+branch = "master"
+version_toml = ["pyproject.toml:project.version"]
+upload_to_pypi = true
+upload_to_release = true
+build_command = "pip install build && python -m build"
+
 [tool.ruff]
 line-length = 79          # or 78 if you prefer ultra-strict
 indent-width = 4          # usually already matches Python standard
@@ -6,3 +42,4 @@ indent-width = 4          # usually already matches Python standard
 # Optional: more control over formatting behavior
 # quote-style = "single"  # or "double", "preserve"
 # skip-magic-trailing-comma = false
+
