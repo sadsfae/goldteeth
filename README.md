@@ -42,8 +42,8 @@ python goldteeth.py tsla above 400 alert.wav
 ## Requirements
 - Python 3 with these libraries:
    * `requests` or `python3-requests`
-   * `pytz` or `python3-pytz` (Stocks only)
-   * `websockets` or `python3-websockets` (Stocks only)
+   * `pytz` or `python3-pytz` (stocks only)
+   * `websockets` or `python3-websockets` (stocks only)
 - mpv or mplayer (audio alerts)
 
 ### GUI
