@@ -52,15 +52,19 @@ To run the GUI:
 python goldteeth_gui.py
 ```
 
-## Installation
+## Installation via Pip
+```bash
+python -m venv goldteeth
+. goldteeth/bin/activate
+pip install goldteeth
+```
+
+## Installation via Repository
 ### Clone Repository
 ```bash
 git clone https://github.com/sadsfae/goldteeth.git
 cd goldteeth/src
 ```
-
-## Installation via Pip
-TBD
 
 ### Copy .desktop file (optional GUI)
 ```bash
