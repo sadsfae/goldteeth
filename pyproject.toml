@@ -16,7 +16,11 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-dependencies = []
+dependencies = [
+    "requests",
+    "pytz",
+    "websocket-client"
+]
 
 [project.urls]
 Homepage = "https://github.com/sadsfae/goldteeth"
@@ -26,7 +30,6 @@ Issues = "https://github.com/sadsfae/goldteeth/issues"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-# Configuration for python-semantic-release to automate releases on master branch
 [tool.semantic_release]
 branch = "master"
 version_toml = ["pyproject.toml:project.version"]
@@ -38,11 +41,7 @@ build_command = "pip install build && python -m build"
 goldteeth = "goldteeth:main"
 
 [tool.ruff]
-line-length = 79          # or 78 if you prefer ultra-strict
-indent-width = 4          # usually already matches Python standard
+line-length = 79
+indent-width = 4
 
 [tool.ruff.format]
-# Optional: more control over formatting behavior
-# quote-style = "single"  # or "double", "preserve"
-# skip-magic-trailing-comma = false
-
