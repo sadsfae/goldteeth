@@ -1,12 +1,31 @@
 # CHANGELOG
 
 
+## v1.0.0 (2026-01-23)
+
+### Features
+
+- Rework structure entirely.
+  ([`4bc8f9e`](https://github.com/sadsfae/goldteeth/commit/4bc8f9e2c5a25179ba3fd055aa7a02214a3ebbca))
+
+BREAKING CHANGE: structure changes, pypi now proper package not module.
+
+### BREAKING CHANGES
+
+- Structure changes, pypi now proper package not module.
+
+
 ## v0.1.10 (2026-01-23)
 
 ### Bug Fixes
 
 - Pypi package location/refs
   ([`99843f0`](https://github.com/sadsfae/goldteeth/commit/99843f042caf4793f2e0c3699f5dbf5f17a0beec))
+
+### Chores
+
+- **release**: V0.1.10 [skip ci]
+  ([`81023a6`](https://github.com/sadsfae/goldteeth/commit/81023a66e6764f56ded33c0ce6bb676a1d804f8b))
 
 
 ## v0.1.9 (2026-01-23)
