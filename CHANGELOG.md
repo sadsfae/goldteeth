@@ -1,12 +1,25 @@
 # CHANGELOG
 
 
+## v0.1.10 (2026-01-23)
+
+### Bug Fixes
+
+- Pypi package location/refs
+  ([`99843f0`](https://github.com/sadsfae/goldteeth/commit/99843f042caf4793f2e0c3699f5dbf5f17a0beec))
+
+
 ## v0.1.9 (2026-01-23)
 
 ### Bug Fixes
 
 - Forcing release of v0.1.9
   ([`72491d8`](https://github.com/sadsfae/goldteeth/commit/72491d8356d94972214cfe1756e77411212de827))
+
+### Chores
+
+- **release**: V0.1.9 [skip ci]
+  ([`d399e8b`](https://github.com/sadsfae/goldteeth/commit/d399e8b5667e5f74b53bcd1c8148c535e15bc5be))
 
 
 ## v0.1.8 (2026-01-22)
