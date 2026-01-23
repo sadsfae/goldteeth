@@ -53,6 +53,7 @@ python src/goldteeth_cli.py tsla above 400 src/goldteeth/alert.wav
 - mpv or mplayer (audio alerts)
 
 ### GUI
+* Right now the GUI is not available via `pip install`
 ```bash
 python src/goldteeth_gui.py
 ```
