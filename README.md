@@ -27,8 +27,8 @@ python src/goldteeth_cli.py <symbol> <mode> <target> <wav>
 
 ### Price Targets
 ```bash
-python src/goldteeth_cli.py btc above 100000 alert.wav
-python src/goldteeth_cli.py eth below 3000 alert.wav
+python src/goldteeth_cli.py btc above 100000 src/goldteeth/alert.wav
+python src/goldteeth_cli.py eth below 3000 src/goldteeth/alert.wav
 ```
 
 ### Volatility
@@ -71,8 +71,8 @@ goldteeth
 
 ## Installation via Repository
 ```bash
-git clone [https://github.com/sadsfae/goldteeth.git](https://github.com/sadsfae/goldteeth.git)
-cd goldteeth/src
+git clone https://github.com/sadsfae/goldteeth.git
+cd goldteeth
 ```
 ### Copy .desktop file (optional GUI)
 ```bash
