@@ -1,7 +1,20 @@
 # CHANGELOG
 
 
+## v1.1.1 (2026-01-29)
+
+### Bug Fixes
+
+- Update notification titles
+  ([`32f24f3`](https://github.com/sadsfae/goldteeth/commit/32f24f3e125101f6e28680117cef8afdf791bbb3))
+
+
 ## v1.1.0 (2026-01-23)
+
+### Chores
+
+- **release**: V1.1.0 [skip ci]
+  ([`d58815c`](https://github.com/sadsfae/goldteeth/commit/d58815c3744110598d884a549a1c705cb1bfc6b4))
 
 ### Features
 
