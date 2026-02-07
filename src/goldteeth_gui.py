@@ -1,17 +1,20 @@
-import tkinter as tk
-from tkinter import ttk, filedialog, scrolledtext, messagebox
-import subprocess
-import threading
 import os
-import sys
 import queue
 import re
 import signal
 import shutil
+import subprocess
+import sys
+import threading
+import tkinter as tk
+from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 
-class goldteethGUI:
+class GoldTeethGUI:
     def __init__(self, root):
+        # 1. Load environment variables from .bashrc immediately on startup
+        self.load_env_vars()
+
         self.root = root
         self.root.title("goldteeth GUI")
         self.root.geometry("800x600")
@@ -25,41 +28,87 @@ class goldteethGUI:
         self.apply_theme()
         self.check_queue()
 
+    def load_env_vars(self):
+        """
+        Manually source ~/.bashrc and update os.environ.
+
+        This fixes the issue where GUI launchers (XFCE, GNOME, etc.)
+        do not load .bashrc exports by default.
+        """
+        bashrc_path = os.path.expanduser("~/.bashrc")
+        if not os.path.exists(bashrc_path):
+            return
+
+        # Construct a bash command that:
+        # 1. Sets PS1 (tricks .bashrc into thinking it's interactive)
+        # 2. Sources .bashrc (silencing output)
+        # 3. Runs 'env' to dump the resulting variables
+        cmd = (
+            f"PS1='ignore' source {bashrc_path} >/dev/null 2>&1 && env"
+        )
+
+        try:
+            result = subprocess.run(
+                ['bash', '-c', cmd],
+                capture_output=True,
+                text=True
+            )
+
+            # Parse the output of 'env' and update Python's os.environ
+            for line in result.stdout.splitlines():
+                if '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key] = value
+
+        except Exception as e:
+            print(
+                f"Warning: Failed to load env from .bashrc: {e}",
+                file=sys.stderr
+            )
+
     def create_widgets(self):
         self.main_frame = ttk.Frame(self.root, padding="10")
-        self.main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.main_frame.grid(
+            row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S)
+        )
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
 
-        ttk.Label(self.main_frame, text="Asset (e.g., BTC, ETH, TSLA):").grid(
-            row=0, column=0, sticky=tk.W
-        )
+        # --- Asset Row ---
+        ttk.Label(
+            self.main_frame, text="Asset (e.g., BTC, ETH, TSLA):"
+        ).grid(row=0, column=0, sticky=tk.W)
+
         self.asset_var = tk.StringVar(value="BTC")
-        ttk.Entry(self.main_frame, textvariable=self.asset_var, width=30).grid(
-            row=0, column=1, pady=5
-        )
+        ttk.Entry(
+            self.main_frame, textvariable=self.asset_var, width=30
+        ).grid(row=0, column=1, pady=5)
 
         self.theme_btn = ttk.Button(
             self.main_frame, text="Theme", command=self.toggle_theme
         )
         self.theme_btn.grid(row=0, column=2, padx=5, sticky=tk.E)
 
+        # --- Mode Rows ---
         ttk.Label(self.main_frame, text="Mode:").grid(
             row=1, column=0, sticky=tk.W
         )
         self.mode_var = tk.StringVar(value="above")
+
         ttk.Radiobutton(
             self.main_frame,
             text="Above",
             variable=self.mode_var,
             value="above",
         ).grid(row=1, column=1, sticky=tk.W)
+
         ttk.Radiobutton(
             self.main_frame,
             text="Below",
             variable=self.mode_var,
             value="below",
         ).grid(row=2, column=1, sticky=tk.W)
+
         ttk.Radiobutton(
             self.main_frame,
             text="Volatility",
@@ -67,19 +116,21 @@ class goldteethGUI:
             value="vol",
         ).grid(row=3, column=1, sticky=tk.W)
 
-        ttk.Label(self.main_frame, text="Target (price or pct-mins):").grid(
-            row=4, column=0, sticky=tk.W
-        )
+        # --- Target Row ---
+        ttk.Label(
+            self.main_frame, text="Target (price or pct-mins):"
+        ).grid(row=4, column=0, sticky=tk.W)
+
         self.target_var = tk.StringVar(value="100000")
         ttk.Entry(
             self.main_frame, textvariable=self.target_var, width=30
         ).grid(row=4, column=1, pady=5)
 
+        # --- Audio File Row ---
         ttk.Label(self.main_frame, text="Alert WAV file:").grid(
             row=5, column=0, sticky=tk.W
         )
 
-        # Updated to look into the package folder
         default_wav = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
             "goldteeth",
@@ -89,24 +140,28 @@ class goldteethGUI:
             default_wav = "alert.wav"
 
         self.wav_var = tk.StringVar(value=default_wav)
-        ttk.Entry(self.main_frame, textvariable=self.wav_var, width=30).grid(
-            row=5, column=1
-        )
+        ttk.Entry(
+            self.main_frame, textvariable=self.wav_var, width=30
+        ).grid(row=5, column=1)
+
         ttk.Button(
             self.main_frame, text="Browse", command=self.browse_wav
         ).grid(row=5, column=2, padx=5)
 
+        # --- Control Buttons ---
         ttk.Button(
             self.main_frame,
             text="Start Monitoring",
             command=self.start_monitoring,
         ).grid(row=6, column=0, pady=10)
+
         ttk.Button(
             self.main_frame,
             text="Stop Monitoring",
             command=self.stop_monitoring,
         ).grid(row=6, column=1, pady=10)
 
+        # --- Console Output ---
         self.console = scrolledtext.ScrolledText(
             self.main_frame, height=20, state="disabled"
         )
@@ -149,7 +204,9 @@ class goldteethGUI:
         self.root.configure(bg=bg_color)
 
         style.configure(".", background=bg_color, foreground=fg_color)
-        style.configure("TLabel", background=bg_color, foreground=fg_color)
+        style.configure(
+            "TLabel", background=bg_color, foreground=fg_color
+        )
         style.configure("TFrame", background=bg_color)
 
         style.configure(
@@ -182,7 +239,10 @@ class goldteethGUI:
             "TRadiobutton",
             background=[("active", bg_color)],
             foreground=[("active", fg_color)],
-            indicatorcolor=[("selected", "#007acc"), ("pressed", "#005c99")],
+            indicatorcolor=[
+                ("selected", "#007acc"),
+                ("pressed", "#005c99")
+            ],
         )
 
         self.console.configure(
@@ -219,7 +279,9 @@ class goldteethGUI:
                 clean_message = self.strip_ansi(message)
 
                 if "!!!" in clean_message:
-                    self.send_notification("Gold Teeth Alert", clean_message)
+                    self.send_notification(
+                        "Gold Teeth Alert", clean_message
+                    )
 
                 self.console.config(state="normal")
                 self.console.insert(tk.END, clean_message + "\n")
@@ -240,11 +302,12 @@ class goldteethGUI:
         wav = self.wav_var.get()
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        # Update: Target the CLI runner, not the package init
         script_path = os.path.join(script_dir, "goldteeth_cli.py")
 
         if not os.path.exists(script_path):
-            messagebox.showerror("Error", f"Script not found: {script_path}")
+            messagebox.showerror(
+                "Error", f"Script not found: {script_path}"
+            )
             return
 
         if not os.path.isfile(wav):
@@ -255,7 +318,9 @@ class goldteethGUI:
 
         self.running = True
         thread = threading.Thread(
-            target=self.run_script, args=(script_path, args), daemon=True
+            target=self.run_script,
+            args=(script_path, args),
+            daemon=True
         )
         thread.start()
         self.log_queue.put("Monitoring started...")
@@ -289,7 +354,9 @@ class goldteethGUI:
             return_code = proc.wait()
 
             if self.running:
-                self.log_queue.put(f"Process finished with code {return_code}")
+                self.log_queue.put(
+                    f"Process finished with code {return_code}"
+                )
 
         except Exception as e:
             self.log_queue.put(f"Error executing process: {e}")
@@ -301,7 +368,9 @@ class goldteethGUI:
         if self.process and self.running:
             try:
                 if os.name == "posix":
-                    os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
+                    os.killpg(
+                        os.getpgid(self.process.pid), signal.SIGTERM
+                    )
                 else:
                     self.process.terminate()
             except ProcessLookupError:
@@ -313,5 +382,5 @@ class goldteethGUI:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = goldteethGUI(root)
+    app = GoldTeethGUI(root)
     root.mainloop()
