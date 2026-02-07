@@ -1,12 +1,38 @@
 # CHANGELOG
 
 
+## v1.2.0 (2026-02-07)
+
+### Features
+
+- Make GUI import env variables on launch.
+  ([`056ac02`](https://github.com/sadsfae/goldteeth/commit/056ac0256f0451c1cd603461f718b893d86646bd))
+
+* We now pull in (or update) env vars into os.environ on load * Minor refactor
+
+- Simplify UI design
+  ([`fb5420c`](https://github.com/sadsfae/goldteeth/commit/fb5420c5d59cd423fcd331fce95cd2eb77f20b19))
+
+* only use one button * use a smaller activity window * shrink overall UI elements
+
+- Support both no/free/paid coingecko API keys.
+  ([`f1d454f`](https://github.com/sadsfae/goldteeth/commit/f1d454f66728fc3e2eba18ff045fac81397b0f41))
+
+* Still supports no API key at all for crypto * Supports free/demo keys * Now supports paid plan API
+  keys (uses different url)
+
+
 ## v1.1.1 (2026-01-29)
 
 ### Bug Fixes
 
 - Update notification titles
   ([`32f24f3`](https://github.com/sadsfae/goldteeth/commit/32f24f3e125101f6e28680117cef8afdf791bbb3))
+
+### Chores
+
+- **release**: V1.1.1 [skip ci]
+  ([`2587ab8`](https://github.com/sadsfae/goldteeth/commit/2587ab818f2b38226c4aed20884dc9b8fdc0f052))
 
 
 ## v1.1.0 (2026-01-23)
