@@ -16,8 +16,16 @@ target is reached.
 > Crypto prices utilize the CoinGecko open API but may be rate limited
 > occasionally.
 >
-> (optional) If you want to use a CoinGecko API key use
+> (optional) If you want to use free/demo CoinGecko API key use
+>
 > `export COINGECKO_API_KEY="your_API_key"`
+
+> [!IMPORTANT]
+> If you are using a pro/paid CoinGeckko API key use
+>
+> `export COINGECKO_PRO_API_KEY="your_PRO_API_key"`
+>
+> free/demo and paid API keys use different urls, so goldteeth will choose whichever is better from what you have defined.
 
 ## Usage
 
