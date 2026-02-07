@@ -12,12 +12,12 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 class GoldTeethGUI:
     def __init__(self, root):
-        # 1. Load environment variables from .bashrc immediately on startup
         self.load_env_vars()
 
         self.root = root
         self.root.title("goldteeth GUI")
-        self.root.geometry("800x600")
+        # Reduced width since we removed the 3rd column
+        self.root.geometry("600x650")
 
         self.process = None
         self.running = False
@@ -31,26 +31,19 @@ class GoldTeethGUI:
     def load_env_vars(self):
         """
         Manually source ~/.bashrc and update os.environ.
-
-        This fixes the issue where GUI launchers (XFCE, GNOME, etc.)
-        do not load .bashrc exports by default. It strictly looks for:
-        FINNHUB_API_KEY, COINGECKO_API_KEY, and COINGECKO_PRO_API_KEY.
+        Strictly looks for: FINNHUB_API_KEY, COINGECKO_API_KEY,
+        and COINGECKO_PRO_API_KEY.
         """
         bashrc_path = os.path.expanduser("~/.bashrc")
         if not os.path.exists(bashrc_path):
             return
 
-        # Target keys to look for
         target_keys = {
             "FINNHUB_API_KEY",
             "COINGECKO_API_KEY",
             "COINGECKO_PRO_API_KEY"
         }
 
-        # Construct a bash command that:
-        # 1. Sets PS1 (tricks .bashrc into thinking it's interactive)
-        # 2. Sources .bashrc (silencing output)
-        # 3. Runs 'env' to dump the resulting variables
         cmd = (
             f"PS1='ignore' source {bashrc_path} >/dev/null 2>&1 && env"
         )
@@ -62,7 +55,6 @@ class GoldTeethGUI:
                 text=True
             )
 
-            # Parse the output of 'env' and update Python's os.environ
             for line in result.stdout.splitlines():
                 if '=' in line:
                     key, value = line.split('=', 1)
@@ -83,7 +75,10 @@ class GoldTeethGUI:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
 
-        # --- Asset Row ---
+        # Middle column (1) expands to fill space
+        self.main_frame.columnconfigure(1, weight=1)
+
+        # --- Asset Row (Row 0) ---
         ttk.Label(
             self.main_frame, text="Asset (e.g., BTC, ETH, TSLA):"
         ).grid(row=0, column=0, sticky=tk.W)
@@ -91,16 +86,18 @@ class GoldTeethGUI:
         self.asset_var = tk.StringVar(value="BTC")
         ttk.Entry(
             self.main_frame, textvariable=self.asset_var, width=30
-        ).grid(row=0, column=1, pady=5)
+        ).grid(row=0, column=1, pady=5, sticky="ew")
 
+        # --- Theme Button (Row 1) ---
+        # Placed under the Asset entry, aligned right
         self.theme_btn = ttk.Button(
             self.main_frame, text="Theme", command=self.toggle_theme
         )
-        self.theme_btn.grid(row=0, column=2, padx=5, sticky=tk.E)
+        self.theme_btn.grid(row=1, column=1, pady=(0, 10), sticky=tk.E)
 
-        # --- Mode Rows ---
+        # --- Mode Rows (Rows 2-4) ---
         ttk.Label(self.main_frame, text="Mode:").grid(
-            row=1, column=0, sticky=tk.W
+            row=2, column=0, sticky=tk.W
         )
         self.mode_var = tk.StringVar(value="above")
 
@@ -109,35 +106,35 @@ class GoldTeethGUI:
             text="Above",
             variable=self.mode_var,
             value="above",
-        ).grid(row=1, column=1, sticky=tk.W)
+        ).grid(row=2, column=1, sticky=tk.W)
 
         ttk.Radiobutton(
             self.main_frame,
             text="Below",
             variable=self.mode_var,
             value="below",
-        ).grid(row=2, column=1, sticky=tk.W)
+        ).grid(row=3, column=1, sticky=tk.W)
 
         ttk.Radiobutton(
             self.main_frame,
             text="Volatility",
             variable=self.mode_var,
             value="vol",
-        ).grid(row=3, column=1, sticky=tk.W)
+        ).grid(row=4, column=1, sticky=tk.W)
 
-        # --- Target Row ---
+        # --- Target Row (Row 5) ---
         ttk.Label(
             self.main_frame, text="Target (price or pct-mins):"
-        ).grid(row=4, column=0, sticky=tk.W)
+        ).grid(row=5, column=0, sticky=tk.W)
 
         self.target_var = tk.StringVar(value="100000")
         ttk.Entry(
             self.main_frame, textvariable=self.target_var, width=30
-        ).grid(row=4, column=1, pady=5)
+        ).grid(row=5, column=1, pady=5, sticky="ew")
 
-        # --- Audio File Row ---
+        # --- Audio File Row (Row 6) ---
         ttk.Label(self.main_frame, text="Alert WAV file:").grid(
-            row=5, column=0, sticky=tk.W
+            row=6, column=0, sticky=tk.W
         )
 
         default_wav = os.path.join(
@@ -151,37 +148,34 @@ class GoldTeethGUI:
         self.wav_var = tk.StringVar(value=default_wav)
         ttk.Entry(
             self.main_frame, textvariable=self.wav_var, width=30
-        ).grid(row=5, column=1)
+        ).grid(row=6, column=1, sticky="ew")
 
+        # --- Browse Button (Row 7) ---
+        # Placed under the WAV entry, aligned right
         ttk.Button(
             self.main_frame, text="Browse", command=self.browse_wav
-        ).grid(row=5, column=2, padx=5)
+        ).grid(row=7, column=1, pady=(0, 10), sticky=tk.E)
 
-        # --- Control Buttons ---
-        ttk.Button(
+        # --- Unified Toggle Button (Row 8) ---
+        self.toggle_btn = ttk.Button(
             self.main_frame,
             text="Start Monitoring",
-            command=self.start_monitoring,
-        ).grid(row=6, column=0, pady=10)
+            command=self.toggle_monitoring,
+        )
+        self.toggle_btn.grid(row=8, column=0, columnspan=2, pady=10)
 
-        ttk.Button(
-            self.main_frame,
-            text="Stop Monitoring",
-            command=self.stop_monitoring,
-        ).grid(row=6, column=1, pady=10)
-
-        # --- Console Output ---
+        # --- Console Output (Row 9) ---
         self.console = scrolledtext.ScrolledText(
-            self.main_frame, height=20, state="disabled"
+            self.main_frame, height=15, state="disabled"
         )
         self.console.grid(
-            row=7,
+            row=9,
             column=0,
-            columnspan=3,
+            columnspan=2,  # Spans the 2 columns
             pady=10,
             sticky=(tk.W, tk.E, tk.N, tk.S),
         )
-        self.main_frame.rowconfigure(7, weight=1)
+        self.main_frame.rowconfigure(9, weight=1)
 
     def toggle_theme(self):
         self.dark_mode = not self.dark_mode
@@ -274,7 +268,6 @@ class GoldTeethGUI:
         return ansi_escape.sub("", text)
 
     def send_notification(self, title, message):
-        """Send a desktop notification using notify-send if available."""
         if shutil.which("notify-send"):
             try:
                 subprocess.Popen(["notify-send", title, message])
@@ -300,11 +293,14 @@ class GoldTeethGUI:
             pass
         self.root.after(100, self.check_queue)
 
-    def start_monitoring(self):
+    def toggle_monitoring(self):
+        """Unified handler for the single button."""
         if self.running:
-            messagebox.showinfo("Info", "Already running!")
-            return
+            self.stop_monitoring()
+        else:
+            self.start_monitoring()
 
+    def start_monitoring(self):
         asset = self.asset_var.get().upper()
         mode = self.mode_var.get()
         target_str = self.target_var.get()
@@ -326,6 +322,8 @@ class GoldTeethGUI:
         args = [asset, mode, target_str, wav]
 
         self.running = True
+        self.toggle_btn.config(text="Stop Monitoring")  # Update Text
+
         thread = threading.Thread(
             target=self.run_script,
             args=(script_path, args),
@@ -370,8 +368,13 @@ class GoldTeethGUI:
         except Exception as e:
             self.log_queue.put(f"Error executing process: {e}")
         finally:
+            # Revert state on finish/crash
             self.running = False
             self.process = None
+            # Schedule button update on main thread
+            self.root.after(
+                0, lambda: self.toggle_btn.config(text="Start Monitoring")
+            )
 
     def stop_monitoring(self):
         if self.process and self.running:
@@ -385,6 +388,8 @@ class GoldTeethGUI:
             except ProcessLookupError:
                 pass
             self.log_queue.put("Stopping...")
+            # Revert button text immediately
+            self.toggle_btn.config(text="Start Monitoring")
         else:
             self.log_queue.put("Nothing to stop.")
 
