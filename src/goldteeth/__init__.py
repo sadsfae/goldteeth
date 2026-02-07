@@ -33,7 +33,7 @@ CRYPTO = {
     "XLM": "stellar",
     "STELLAR": "stellar",
 }
-POLL_INTERVAL = 30
+POLL_INTERVAL = 60
 
 GREEN = "\033[92m"
 RED = "\033[91m"
