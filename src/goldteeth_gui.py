@@ -33,11 +33,19 @@ class GoldTeethGUI:
         Manually source ~/.bashrc and update os.environ.
 
         This fixes the issue where GUI launchers (XFCE, GNOME, etc.)
-        do not load .bashrc exports by default.
+        do not load .bashrc exports by default. It strictly looks for:
+        FINNHUB_API_KEY, COINGECKO_API_KEY, and COINGECKO_PRO_API_KEY.
         """
         bashrc_path = os.path.expanduser("~/.bashrc")
         if not os.path.exists(bashrc_path):
             return
+
+        # Target keys to look for
+        target_keys = {
+            "FINNHUB_API_KEY",
+            "COINGECKO_API_KEY",
+            "COINGECKO_PRO_API_KEY"
+        }
 
         # Construct a bash command that:
         # 1. Sets PS1 (tricks .bashrc into thinking it's interactive)
@@ -58,7 +66,8 @@ class GoldTeethGUI:
             for line in result.stdout.splitlines():
                 if '=' in line:
                     key, value = line.split('=', 1)
-                    os.environ[key] = value
+                    if key in target_keys:
+                        os.environ[key] = value
 
         except Exception as e:
             print(
