@@ -54,16 +54,38 @@ finnhub_symbol = None
 
 
 def get_crypto_price_coingecko(cg_id):
-    cg_key = os.getenv("COINGECKO_API_KEY")
+    pro_key = os.getenv("COINGECKO_PRO_API_KEY")
+    demo_key = os.getenv("COINGECKO_API_KEY")
+
     try:
-        url = "https://api.coingecko.com/api/v3/simple/price"
-        params = {"ids": cg_id, "vs_currencies": "usd"}
-        if cg_key:
-            params["x_cg_demo_api_key"] = cg_key
-        response = requests.get(url, params=params, timeout=10)
+        if pro_key:
+            # --- Pro API Logic ---
+            # Uses specific Pro URL and Header-based authentication
+            url = "https://pro-api.coingecko.com/api/v3/simple/price"
+            headers = {
+                "x-cg-pro-api-key": pro_key,
+                "Accept": "application/json"
+            }
+            params = {"ids": cg_id, "vs_currencies": "usd"}
+            response = requests.get(
+                url, headers=headers, params=params, timeout=10
+            )
+        else:
+            # --- Free/Demo API Logic ---
+            # Uses public URL and Query Parameter authentication
+            url = "https://api.coingecko.com/api/v3/simple/price"
+            params = {"ids": cg_id, "vs_currencies": "usd"}
+            if demo_key:
+                params["x_cg_demo_api_key"] = demo_key
+            response = requests.get(
+                url, params=params, timeout=10
+            )
         response.raise_for_status()
-        return response.json()[cg_id]["usd"]
+        data = response.json()
+        return data[cg_id]["usd"]
+
     except Exception:
+        # You might want to print(e) here for debugging if prices fail silently
         return None
 
 
