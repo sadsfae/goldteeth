@@ -21,7 +21,7 @@ target is reached.
 > `export COINGECKO_API_KEY="your_API_key"`
 
 > [!IMPORTANT]
-> If you are using a pro/paid CoinGeckko API key use
+> If you are using a pro/paid CoinGecko API key use
 >
 > `export COINGECKO_PRO_API_KEY="your_PRO_API_key"`
 >
