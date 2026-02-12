@@ -119,7 +119,7 @@ cd goldteeth
 
 ```bash
 python src/goldteeth_cli.py tsla below 400 src/goldteeth/alert.wav
-python src/goldteeth_cli.py btc vol 10-5 src/goldteeth/alert.wav
+python src/goldteeth_cli.py btc vol 5-60 src/goldteeth/alert.wav
 ```
 
 ### GUI Installation via Repository
