@@ -59,7 +59,7 @@ python src/goldteeth_cli.py tsla above 400 src/goldteeth/alert.wav
 
 #### Limitations
 - With the free API key Finnhub still limits you to one websocket connection.
-- Goldteeth tries to work around this with recovery loops and HTTP fallback and keep trying if using multiple instances.
+- Goldteeth tries to work around this with recovery loops and HTTP fallback and will keep trying if using multiple instances.
 - If you see this error it's due to free API limits, if you have a paid API key then you shouldn't see limits.
 
 ```
@@ -68,8 +68,8 @@ WebSocket closed
 ```
 
 ## Configuration
-- Modify `CRYPTO_INTERVAL` to adjust crypto polling frequency
-- Modify `STOCK_INTERVAL` to adjust stock ticker polling frequency
+- Modify `CRYPTO_INTERVAL` to adjust crypto polling frequency _(default: 60s)_
+- Modify `STOCK_INTERVAL` to adjust stock ticker polling frequency _(default: 120s)_
 
 ## Requirements
 
