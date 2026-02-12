@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v1.3.1 (2026-02-12)
+
+### Bug Fixes
+
+- Remove ws msg for cryto stdout, add doc TOC
+  ([`d23fbae`](https://github.com/sadsfae/goldteeth/commit/d23fbaee9a398ac57bdfc756cbe805d0d4c0d4df))
+
+### Chores
+
+- Remove incorrect ws poll msg for crypto
+  ([`4e95a74`](https://github.com/sadsfae/goldteeth/commit/4e95a7493837493d348e341907172c3264f2ba10))
+
+
 ## v1.3.0 (2026-02-12)
 
 ### Chores
@@ -16,6 +29,9 @@
 
 - Update UI image
   ([`9d82d82`](https://github.com/sadsfae/goldteeth/commit/9d82d822e3058631f1b710d30617d635839dc17f))
+
+- **release**: V1.3.0 [skip ci]
+  ([`9978d37`](https://github.com/sadsfae/goldteeth/commit/9978d37853c6320051334bd253655ccfc1a62cd7))
 
 ### Features
 
