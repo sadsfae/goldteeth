@@ -1,7 +1,39 @@
 # CHANGELOG
 
 
+## v1.3.0 (2026-02-12)
+
+### Chores
+
+- Minor doc update
+  ([`07bb2c6`](https://github.com/sadsfae/goldteeth/commit/07bb2c6a2d48b25604133c1b8840f8b64358ab50))
+
+- One more README update
+  ([`a7e9957`](https://github.com/sadsfae/goldteeth/commit/a7e9957272c4ba09549a1089de92167eeac4087b))
+
+- Update README
+  ([`489348b`](https://github.com/sadsfae/goldteeth/commit/489348b55b1e338cd2f17faf10f82876b8f0bb92))
+
+- Update UI image
+  ([`9d82d82`](https://github.com/sadsfae/goldteeth/commit/9d82d822e3058631f1b710d30617d635839dc17f))
+
+### Features
+
+- Websocket recovery loop, fix stale data.
+  ([`a986a5f`](https://github.com/sadsfae/goldteeth/commit/a986a5f8dfd0de243002be311eaf97a482763f88))
+
+* Add websocket recovery loops to help with FINNHUB free API limits. * Add HTTP fallback mechanism.
+  * Fix potential stale data bug when websocket crashed (due to API limits). This now resets last
+  price to None. * Split out INTERVAL to CRYPTO_INTERVAL and STOCK_INTERVAL * Wrap websocket in
+  permanent loop to try to work around stock API limits.
+
+
 ## v1.2.0 (2026-02-07)
+
+### Chores
+
+- **release**: V1.2.0 [skip ci]
+  ([`5b25a26`](https://github.com/sadsfae/goldteeth/commit/5b25a2623bc49576939070900ab819a1627d39d2))
 
 ### Features
 
