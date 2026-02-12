@@ -33,7 +33,14 @@ CRYPTO = {
     "XLM": "stellar",
     "STELLAR": "stellar",
 }
-POLL_INTERVAL = 60
+
+# --- Configuration ---
+# Coingecko (Crypto) often allows slightly faster polling on public endpoints
+CRYPTO_INTERVAL = 60
+
+# Finnhub (Stocks) has strict limits (60 calls/min free tier)
+# Keep this >= 60 or 120 to be safe if running multiple instances
+STOCK_INTERVAL = 120
 
 GREEN = "\033[92m"
 RED = "\033[91m"
@@ -60,7 +67,6 @@ def get_crypto_price_coingecko(cg_id):
     try:
         if pro_key:
             # --- Pro API Logic ---
-            # Uses specific Pro URL and Header-based authentication
             url = "https://pro-api.coingecko.com/api/v3/simple/price"
             headers = {
                 "x-cg-pro-api-key": pro_key,
@@ -72,7 +78,6 @@ def get_crypto_price_coingecko(cg_id):
             )
         else:
             # --- Free/Demo API Logic ---
-            # Uses public URL and Query Parameter authentication
             url = "https://api.coingecko.com/api/v3/simple/price"
             params = {"ids": cg_id, "vs_currencies": "usd"}
             if demo_key:
@@ -85,7 +90,6 @@ def get_crypto_price_coingecko(cg_id):
         return data[cg_id]["usd"]
 
     except Exception:
-        # You might want to print(e) here for debugging if prices fail silently
         return None
 
 
@@ -131,11 +135,17 @@ def on_message(ws, message):
 
 
 def on_error(ws, error):
+    global current_price
     print(f"WebSocket error: {error}")
+    with price_lock:
+        current_price = None
 
 
 def on_close(ws, close_status_code, close_msg):
+    global current_price
     print("WebSocket closed")
+    with price_lock:
+        current_price = None
 
 
 def on_open(ws, symbol):
@@ -145,16 +155,26 @@ def on_open(ws, symbol):
 def start_websocket(symbol, key):
     import websocket
 
-    ws_url = f"wss://ws.finnhub.io?token={key}"
-    ws = websocket.WebSocketApp(
-        ws_url,
-        on_open=lambda ws: on_open(ws, symbol),
-        on_message=on_message,
-        on_error=on_error,
-        on_close=on_close,
-    )
+    def run_ws_forever():
+        while True:
+            try:
+                ws_url = f"wss://ws.finnhub.io?token={key}"
+                ws = websocket.WebSocketApp(
+                    ws_url,
+                    on_open=lambda ws: on_open(ws, symbol),
+                    on_message=on_message,
+                    on_error=on_error,
+                    on_close=on_close,
+                )
+                ws.run_forever()
+            except Exception:
+                pass
+
+            # Increased backoff to 30s to reduce fighting/rate-limiting
+            time.sleep(30)
+
     global ws_thread
-    ws_thread = threading.Thread(target=ws.run_forever)
+    ws_thread = threading.Thread(target=run_ws_forever)
     ws_thread.daemon = True
     ws_thread.start()
 
@@ -269,6 +289,7 @@ def run_volatility_monitor(
     wav,
     player_cmd,
     fetch_price,
+    interval,
     is_crypto=False,
 ):
     """Run the volatility monitoring loop."""
@@ -331,11 +352,18 @@ def run_volatility_monitor(
             else:
                 print(f"{symbol}: Failed to fetch price ({time_str})")
 
-        time.sleep(POLL_INTERVAL)
+        time.sleep(interval)
 
 
 def run_price_monitor(
-    symbol, mode, target, wav, player_cmd, fetch_price, is_crypto=False
+    symbol,
+    mode,
+    target,
+    wav,
+    player_cmd,
+    fetch_price,
+    interval,
+    is_crypto=False,
 ):
     """Run the price threshold monitoring loop."""
     triggered = False
@@ -417,7 +445,7 @@ def run_price_monitor(
             else:
                 print(f"{symbol}: Failed to fetch price ({time_str})")
 
-        time.sleep(POLL_INTERVAL)
+        time.sleep(interval)
 
 
 def get_default_wav_path():
@@ -486,8 +514,10 @@ def main():
     cg_id = CRYPTO.get(symbol_upper)
     is_crypto = bool(cg_id)
 
-    if is_crypto:
+    # Determine interval based on asset type
+    active_interval = CRYPTO_INTERVAL if is_crypto else STOCK_INTERVAL
 
+    if is_crypto:
         def fetch_price():
             return get_crypto_price_coingecko(cg_id)
     else:
@@ -518,6 +548,7 @@ def main():
     else:
         direction = "above or at" if mode == "above" else "below or at"
         print(f"Alert when price goes {direction} ${target:,}")
+    print(f"Polling every {active_interval}s when websocket is unavailable.")
     print("Press Ctrl+C to stop monitoring.\n")
 
     try:
@@ -530,6 +561,7 @@ def main():
                 wav,
                 player_cmd,
                 fetch_price,
+                active_interval,
                 is_crypto,
             )
         else:
@@ -540,6 +572,7 @@ def main():
                 wav,
                 player_cmd,
                 fetch_price,
+                active_interval,
                 is_crypto,
             )
     except KeyboardInterrupt:

@@ -57,6 +57,20 @@ export FINNHUB_API_KEY="your_key_here"
 python src/goldteeth_cli.py tsla above 400 src/goldteeth/alert.wav
 ```
 
+#### Limitations
+- With the free API key Finnhub still limits you to one websocket connection.
+- Goldteeth tries to work around this with recovery loops and HTTP fallback and will keep trying if using multiple instances.
+- If you see this error it's due to free API limits, if you have a paid API key then you shouldn't see limits.
+
+```
+WebSocket error: Connection to remote host was lost.
+WebSocket closed
+```
+
+## Configuration
+- Modify `CRYPTO_INTERVAL` to adjust crypto polling frequency _(default: 60s)_
+- Modify `STOCK_INTERVAL` to adjust stock ticker polling frequency _(default: 120s)_
+
 ## Requirements
 
 - Python 3 with these libraries:
@@ -72,8 +86,13 @@ python src/goldteeth_cli.py tsla above 400 src/goldteeth/alert.wav
 ```bash
 python src/goldteeth_gui.py
 ```
+## Installation
 
-## Installation via Pip
+- There are two ways to Goldteeth:
+  - Clone repositry and run (ensure Python libraries are present)
+  - `pip install`
+
+### Installation via Pip
 
 ```bash
 python -m venv goldteeth
@@ -81,7 +100,7 @@ python -m venv goldteeth
 pip install goldteeth
 ```
 
-### Usage with Pip
+#### Usage with Pip
 
 - `alert.wav` is included but you can pass your own audio file.
 
@@ -89,14 +108,26 @@ pip install goldteeth
 goldteeth btc below 88000
 ```
 
-## Installation via Repository
+### Installation via Repository
 
 ```bash
 git clone https://github.com/sadsfae/goldteeth.git
 cd goldteeth
 ```
 
-### Copy .desktop file (optional GUI)
+#### Run from Repository
+
+```bash
+python src/goldteeth_cli.py tsla below 400 src/goldteeth/alert.wav
+python src/goldteeth_cli.py btc vol 5-60 src/goldteeth/alert.wav
+```
+
+### GUI Installation via Repository
+
+- First make sure you have the repository cloned.
+- Be inside the repository directory.
+
+#### Generate GUI Desktop Shortcut
 
 ```bash
 cat > goldteeth.desktop <<EOF
@@ -113,7 +144,7 @@ Categories=Utility;Finance;
 EOF
 ```
 
-### Install it to local apps folder (optional GUI)
+#### Copy GUI Desktop Shortcut
 
 ```bash
 mkdir -p ~/.local/share/applications/
@@ -121,6 +152,8 @@ mv goldteeth.desktop ~/.local/share/applications/
 chmod +x ~/.local/share/applications/goldteeth.desktop
 update-desktop-database ~/.local/share/applications/
 ```
+
+- Goldteeth should now appear in your Applications menu in your favorite Desktop Environment.
 
 ## Screenshots
 
