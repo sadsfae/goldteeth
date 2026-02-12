@@ -9,6 +9,30 @@ target is reached.
 - It will also send a desktop notification on Linux or MAC OSX.
 - Run via `python` in a terminal or use the optional GUI.
 
+## Table of Contents
+
+- [Usage](#usage)
+  - [Price Targets](#price-targets)
+  - [Volatility](#volatility)
+  - [Stocks](#stocks)
+    - [Limitations](#limitations)
+- [Configuration](#configuration)
+- [Requirements](#requirements)
+  - [GUI](#gui)
+- [Installation](#installation)
+  - [Installation via Pip](#installation-via-pip)
+    - [Usage with Pip](#usage-with-pip)
+  - [Installation via Repository](#installation-via-repository)
+    - [Run from Repository](#run-from-repository)
+  - [GUI Installation via Repository](#gui-installation-via-repository)
+    - [Generate GUI Desktop Shortcut](#generate-gui-desktop-shortcut)
+    - [Copy GUI Desktop Shortcut](#copy-gui-desktop-shortcut)
+- [Screenshots](#screenshots)
+  - [CLI](#cli)
+  - [GUI](#gui-1)
+
+## Usage
+
 > [!NOTE]
 > Stock prices utilize [Finnhub](https://finnhub.io/register) free API
 > (email sign-up required)
@@ -26,8 +50,6 @@ target is reached.
 > `export COINGECKO_PRO_API_KEY="your_PRO_API_key"`
 >
 > free/demo and paid API keys use different urls, so goldteeth will choose whichever is better from what you have defined.
-
-## Usage
 
 ```bash
 python src/goldteeth_cli.py <symbol> <mode> <target> <wav>
@@ -58,6 +80,7 @@ python src/goldteeth_cli.py tsla above 400 src/goldteeth/alert.wav
 ```
 
 #### Limitations
+
 - With the free API key Finnhub still limits you to one websocket connection.
 - Goldteeth tries to work around this with recovery loops and HTTP fallback and will keep trying if using multiple instances.
 - If you see this error it's due to free API limits, if you have a paid API key then you shouldn't see limits.
@@ -68,6 +91,7 @@ WebSocket closed
 ```
 
 ## Configuration
+
 - Modify `CRYPTO_INTERVAL` to adjust crypto polling frequency _(default: 60s)_
 - Modify `STOCK_INTERVAL` to adjust stock ticker polling frequency _(default: 120s)_
 
@@ -86,6 +110,7 @@ WebSocket closed
 ```bash
 python src/goldteeth_gui.py
 ```
+
 ## Installation
 
 - There are two ways to Goldteeth:
