@@ -34,12 +34,7 @@ CRYPTO = {
     "STELLAR": "stellar",
 }
 
-# --- Configuration ---
-# Coingecko (Crypto) often allows slightly faster polling on public endpoints
 CRYPTO_INTERVAL = 60
-
-# Finnhub (Stocks) has strict limits (60 calls/min free tier)
-# Keep this >= 60 or 120 to be safe if running multiple instances
 STOCK_INTERVAL = 120
 
 GREEN = "\033[92m"
@@ -67,6 +62,7 @@ def get_crypto_price_coingecko(cg_id):
     try:
         if pro_key:
             # --- Pro API Logic ---
+            # Uses specific Pro URL and Header-based authentication
             url = "https://pro-api.coingecko.com/api/v3/simple/price"
             headers = {
                 "x-cg-pro-api-key": pro_key,
@@ -78,6 +74,7 @@ def get_crypto_price_coingecko(cg_id):
             )
         else:
             # --- Free/Demo API Logic ---
+            # Uses public URL and Query Parameter authentication
             url = "https://api.coingecko.com/api/v3/simple/price"
             params = {"ids": cg_id, "vs_currencies": "usd"}
             if demo_key:
@@ -90,6 +87,7 @@ def get_crypto_price_coingecko(cg_id):
         return data[cg_id]["usd"]
 
     except Exception:
+        # You might want to print(e) here for debugging if prices fail silently
         return None
 
 
@@ -169,8 +167,6 @@ def start_websocket(symbol, key):
                 ws.run_forever()
             except Exception:
                 pass
-
-            # Increased backoff to 30s to reduce fighting/rate-limiting
             time.sleep(30)
 
     global ws_thread
@@ -514,7 +510,6 @@ def main():
     cg_id = CRYPTO.get(symbol_upper)
     is_crypto = bool(cg_id)
 
-    # Determine interval based on asset type
     active_interval = CRYPTO_INTERVAL if is_crypto else STOCK_INTERVAL
 
     if is_crypto:
@@ -548,7 +543,13 @@ def main():
     else:
         direction = "above or at" if mode == "above" else "below or at"
         print(f"Alert when price goes {direction} ${target:,}")
-    print(f"Polling every {active_interval}s when websocket is unavailable.")
+
+    if is_crypto:
+        print(f"Polling every {active_interval}s.")
+    else:
+        print(f"Polling every {active_interval}s when websocket is "
+              "unavailable.")
+
     print("Press Ctrl+C to stop monitoring.\n")
 
     try:
