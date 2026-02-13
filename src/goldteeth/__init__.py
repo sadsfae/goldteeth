@@ -9,6 +9,11 @@ import json
 import requests
 import datetime
 
+# --- Configuration ---
+SHOW_WS_ERRORS = False  # Set to True to see WebSocket disconnect/error messages
+CRYPTO_INTERVAL = 60  # Poll interval for crypto (seconds)
+STOCK_INTERVAL = 120  # Poll interval for stocks when WebSocket is down (seconds)
+
 CRYPTO = {
     "BTC": "bitcoin",
     "BITCOIN": "bitcoin",
@@ -33,9 +38,6 @@ CRYPTO = {
     "XLM": "stellar",
     "STELLAR": "stellar",
 }
-
-CRYPTO_INTERVAL = 60
-STOCK_INTERVAL = 120
 
 GREEN = "\033[92m"
 RED = "\033[91m"
@@ -62,14 +64,12 @@ def get_crypto_price_coingecko(cg_id):
     try:
         if pro_key:
             # --- Pro API Logic ---
-            # Uses specific Pro URL and Header-based authentication
             url = "https://pro-api.coingecko.com/api/v3/simple/price"
             headers = {"x-cg-pro-api-key": pro_key, "Accept": "application/json"}
             params = {"ids": cg_id, "vs_currencies": "usd"}
             response = requests.get(url, headers=headers, params=params, timeout=10)
         else:
             # --- Free/Demo API Logic ---
-            # Uses public URL and Query Parameter authentication
             url = "https://api.coingecko.com/api/v3/simple/price"
             params = {"ids": cg_id, "vs_currencies": "usd"}
             if demo_key:
@@ -80,7 +80,6 @@ def get_crypto_price_coingecko(cg_id):
         return data[cg_id]["usd"]
 
     except Exception:
-        # You might want to print(e) here for debugging if prices fail silently
         return None
 
 
@@ -127,14 +126,16 @@ def on_message(ws, message):
 
 def on_error(ws, error):
     global current_price
-    print(f"WebSocket error: {error}")
+    if SHOW_WS_ERRORS:
+        print(f"WebSocket error: {error}")
     with price_lock:
         current_price = None
 
 
 def on_close(ws, close_status_code, close_msg):
     global current_price
-    print("WebSocket closed")
+    if SHOW_WS_ERRORS:
+        print("WebSocket closed")
     with price_lock:
         current_price = None
 

@@ -94,6 +94,7 @@ WebSocket closed
 
 - Modify `CRYPTO_INTERVAL` to adjust crypto polling frequency _(default: 60s)_
 - Modify `STOCK_INTERVAL` to adjust stock ticker polling frequency _(default: 120s)_
+- Modify `SHOW_WS_ERRORS` to show/hide websocket errors for stocks _(default: False)_
 
 ## Requirements
 
