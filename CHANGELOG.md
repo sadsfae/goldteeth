@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v1.4.0 (2026-02-13)
+
+### Chores
+
+- Black formatting
+  ([`8a303f3`](https://github.com/sadsfae/goldteeth/commit/8a303f3c6e49a7642d2530873076c620cbc96723))
+
+### Features
+
+- Allow show/hide of websocket stock errors.
+  ([`5f3002b`](https://github.com/sadsfae/goldteeth/commit/5f3002bf1a8ebdb1b51390aa1068d960397b1b80))
+
+* SHOW_WS_ERRORS=False is default
+
+
 ## v1.3.1 (2026-02-12)
 
 ### Bug Fixes
@@ -12,6 +27,9 @@
 
 - Remove incorrect ws poll msg for crypto
   ([`4e95a74`](https://github.com/sadsfae/goldteeth/commit/4e95a7493837493d348e341907172c3264f2ba10))
+
+- **release**: V1.3.1 [skip ci]
+  ([`9e5c957`](https://github.com/sadsfae/goldteeth/commit/9e5c957dfa78daa8fd0b748eafde248a352511f3))
 
 
 ## v1.3.0 (2026-02-12)
