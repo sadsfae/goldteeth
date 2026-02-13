@@ -64,14 +64,9 @@ def get_crypto_price_coingecko(cg_id):
             # --- Pro API Logic ---
             # Uses specific Pro URL and Header-based authentication
             url = "https://pro-api.coingecko.com/api/v3/simple/price"
-            headers = {
-                "x-cg-pro-api-key": pro_key,
-                "Accept": "application/json"
-            }
+            headers = {"x-cg-pro-api-key": pro_key, "Accept": "application/json"}
             params = {"ids": cg_id, "vs_currencies": "usd"}
-            response = requests.get(
-                url, headers=headers, params=params, timeout=10
-            )
+            response = requests.get(url, headers=headers, params=params, timeout=10)
         else:
             # --- Free/Demo API Logic ---
             # Uses public URL and Query Parameter authentication
@@ -79,9 +74,7 @@ def get_crypto_price_coingecko(cg_id):
             params = {"ids": cg_id, "vs_currencies": "usd"}
             if demo_key:
                 params["x_cg_demo_api_key"] = demo_key
-            response = requests.get(
-                url, params=params, timeout=10
-            )
+            response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
         return data[cg_id]["usd"]
@@ -299,9 +292,7 @@ def run_volatility_monitor(
 
         if price is not None and price > 0:
             cutoff = now - (time_mins * 60)
-            update_deques(
-                now, price, price_history, min_prices, max_prices, cutoff
-            )
+            update_deques(now, price, price_history, min_prices, max_prices, cutoff)
 
             has_enough_data = len(price_history) >= 2
 
@@ -341,10 +332,7 @@ def run_volatility_monitor(
         else:
             if not is_crypto:
                 hours = hours_until_market_open()
-                print(
-                    f"{symbol}: Market closed, "
-                    f"~{hours}h until open ({time_str})"
-                )
+                print(f"{symbol}: Market closed, " f"~{hours}h until open ({time_str})")
             else:
                 print(f"{symbol}: Failed to fetch price ({time_str})")
 
@@ -405,20 +393,14 @@ def run_price_monitor(
 
             print(f"{symbol}: ${price:,.2f} ({time_str}) {status}")
 
-            crossed = crossed_threshold(
-                price, last_price, target, mode == "above"
-            )
+            crossed = crossed_threshold(price, last_price, target, mode == "above")
             if not triggered and crossed:
                 if mode == "above":
-                    msg = (
-                        f"{symbol} BROKE ABOVE ${target:,}! "
-                        f"Price: ${price:,.2f}"
-                    )
+                    msg = f"{symbol} BROKE ABOVE ${target:,}! " f"Price: ${price:,.2f}"
                     print(f"\n!!! {msg} !!!")
                 else:
                     msg = (
-                        f"{symbol} DROPPED BELOW ${target:,}! "
-                        f"Price: ${price:,.2f}"
+                        f"{symbol} DROPPED BELOW ${target:,}! " f"Price: ${price:,.2f}"
                     )
                     print(f"\n!!! {msg} !!!")
 
@@ -434,10 +416,7 @@ def run_price_monitor(
         else:
             if not is_crypto:
                 hours = hours_until_market_open()
-                print(
-                    f"{symbol}: Market closed, "
-                    f"~{hours}h until open ({time_str})"
-                )
+                print(f"{symbol}: Market closed, " f"~{hours}h until open ({time_str})")
             else:
                 print(f"{symbol}: Failed to fetch price ({time_str})")
 
@@ -513,8 +492,10 @@ def main():
     active_interval = CRYPTO_INTERVAL if is_crypto else STOCK_INTERVAL
 
     if is_crypto:
+
         def fetch_price():
             return get_crypto_price_coingecko(cg_id)
+
     else:
         api_key = os.getenv("FINNHUB_API_KEY")
         if not api_key:
@@ -547,8 +528,7 @@ def main():
     if is_crypto:
         print(f"Polling every {active_interval}s.")
     else:
-        print(f"Polling every {active_interval}s when websocket is "
-              "unavailable.")
+        print(f"Polling every {active_interval}s when websocket is " "unavailable.")
 
     print("Press Ctrl+C to stop monitoring.\n")
 
