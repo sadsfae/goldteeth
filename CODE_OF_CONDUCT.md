@@ -1,4 +1,4 @@
-Pricewatch Code Of Conduct
+Goldteeth Code Of Conduct
 ==========================
 
 ## Overview
