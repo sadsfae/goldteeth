@@ -33,6 +33,8 @@ class GoldTeethGUI:
         Manually source ~/.bashrc and update os.environ.
         Strictly looks for: FINNHUB_API_KEY, COINGECKO_API_KEY,
         and COINGECKO_PRO_API_KEY.
+        Uses an interactive bash since most .bashrc files return early
+        for non-interactive shells and would skip the exports.
         """
         bashrc_path = os.path.expanduser("~/.bashrc")
         if not os.path.exists(bashrc_path):
@@ -50,7 +52,7 @@ class GoldTeethGUI:
 
         try:
             result = subprocess.run(
-                ['bash', '-c', cmd],
+                ['bash', '--norc', '-ic', cmd],
                 capture_output=True,
                 text=True
             )
