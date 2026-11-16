@@ -1,12 +1,40 @@
 # CHANGELOG
 
 
+## v1.4.1 (2026-11-16)
+
+### Bug Fixes
+
+- Source bashrc interactively in GUI env loader
+  ([`54c01de`](https://github.com/sadsfae/goldteeth/commit/54c01de6700c31d7cf31bb3290f48bc3cf741d0e))
+
+GUI launched from the desktop did not pick up api keys from ~/.bashrc because non-interactive bash
+  -c hits the standard `[[ $- != *i* ]] && return` guard before any exports. Source with bash --norc
+  -ic so the file runs once in interactive mode.
+
+fixes: https://github.com/sadsfae/goldteeth/issues/61
+
+### Chores
+
+- Remove unused id-token permission
+  ([`3a0b4ba`](https://github.com/sadsfae/goldteeth/commit/3a0b4ba6febfd4cafcc4e9ad5b3c77ab0b29316c))
+
+The pypa publish step authenticates with the PyPI API token, not OIDC, so id-token: write is never
+  exercised. Removing the dead permission removes the only OIDC trust surface.
+
+- Update docs
+  ([`5301f33`](https://github.com/sadsfae/goldteeth/commit/5301f3325b598368865c3ea2d7e44c3db9787845))
+
+
 ## v1.4.0 (2026-02-13)
 
 ### Chores
 
 - Black formatting
   ([`8a303f3`](https://github.com/sadsfae/goldteeth/commit/8a303f3c6e49a7642d2530873076c620cbc96723))
+
+- **release**: V1.4.0 [skip ci]
+  ([`9ae0f40`](https://github.com/sadsfae/goldteeth/commit/9ae0f405096fa86b15faffafc5167abb1d350faa))
 
 ### Features
 
