@@ -1,12 +1,34 @@
 # CHANGELOG
 
 
+## v1.4.2 (2026-11-17)
+
+### Bug Fixes
+
+- Vix tracking outside FINNHUB
+  ([`c642459`](https://github.com/sadsfae/goldteeth/commit/c642459253fb101154f79ba48ab6104d6f45d9a4))
+
+Finnhub requires a paid subscription for index symbols, so ^VIX returns a market-data error and
+  plain VIX returns a zero quote. Indexes are now fetched from CBOE's keyless public delayed-quotes
+  CDN, VIX is accepted as an alias for ^VIX, and empty Finnhub quotes fall back to None instead of
+  showing $0.
+
+
 ## v1.4.1 (2026-11-16)
 
 ### Bug Fixes
 
 - Source bashrc interactively in GUI env loader
   ([`54c01de`](https://github.com/sadsfae/goldteeth/commit/54c01de6700c31d7cf31bb3290f48bc3cf741d0e))
+
+GUI launched from the desktop did not pick up api keys from ~/.bashrc because non-interactive bash
+  -c hits the standard `[[ $- != *i* ]] && return` guard before any exports. Source with bash --norc
+  -ic so the file runs once in interactive mode.
+
+fixes: https://github.com/sadsfae/goldteeth/issues/61
+
+- Source bashrc interactively in GUI env loader
+  ([`f7bb939`](https://github.com/sadsfae/goldteeth/commit/f7bb939212aa1bb89f66b732b766ec913e36c93e))
 
 GUI launched from the desktop did not pick up api keys from ~/.bashrc because non-interactive bash
   -c hits the standard `[[ $- != *i* ]] && return` guard before any exports. Source with bash --norc
@@ -22,8 +44,17 @@ fixes: https://github.com/sadsfae/goldteeth/issues/61
 The pypa publish step authenticates with the PyPI API token, not OIDC, so id-token: write is never
   exercised. Removing the dead permission removes the only OIDC trust surface.
 
+- Remove unused id-token permission
+  ([`b70bbaf`](https://github.com/sadsfae/goldteeth/commit/b70bbafeec0a8999395673d42f1f16e1454f6d73))
+
+The pypa publish step authenticates with the PyPI API token, not OIDC, so id-token: write is never
+  exercised. Removing the dead permission removes the only OIDC trust surface.
+
 - Update docs
   ([`5301f33`](https://github.com/sadsfae/goldteeth/commit/5301f3325b598368865c3ea2d7e44c3db9787845))
+
+- **release**: V1.4.1 [skip ci]
+  ([`e71a72f`](https://github.com/sadsfae/goldteeth/commit/e71a72f360c034222f84b5ec4f220b241f657ff3))
 
 
 ## v1.4.0 (2026-02-13)
