@@ -15,6 +15,7 @@ target is reached.
   - [Price Targets](#price-targets)
   - [Volatility](#volatility)
   - [Stocks](#stocks)
+    - [Indices](#indices)
     - [Limitations](#limitations)
 - [Configuration](#configuration)
 - [Requirements](#requirements)
@@ -77,6 +78,17 @@ python src/goldteeth_cli.py tsla vol 5-10 src/goldteeth/alert.wav  # 5% move in 
 ```bash
 export FINNHUB_API_KEY="your_key_here"
 python src/goldteeth_cli.py tsla above 400 src/goldteeth/alert.wav
+```
+
+### Indices
+
+- CBOE indices are fetched from CBOE's public delayed-quotes CDN, no API key required (about 15 minutes delayed).
+- `VIX` is accepted as an alias for the `^VIX` index; other indices use the `^` prefix, e.g. `^SPX`, `^DJI`, `^NDX`.
+
+```bash
+# no FINNHUB_API_KEY needed
+python src/goldteeth_cli.py ^vix above 30 src/goldteeth/alert.wav
+python src/goldteeth_cli.py VIX vol 5-60 src/goldteeth/alert.wav
 ```
 
 #### Limitations

@@ -14,6 +14,10 @@ SHOW_WS_ERRORS = False  # Set to True to see WebSocket disconnect/error messages
 CRYPTO_INTERVAL = 60  # Poll interval for crypto (seconds)
 STOCK_INTERVAL = 120  # Poll interval for stocks when WebSocket is down (seconds)
 
+INDEX_ALIASES = {
+    "VIX": "^VIX",
+}
+
 CRYPTO = {
     "BTC": "bitcoin",
     "BITCOIN": "bitcoin",
@@ -90,7 +94,26 @@ def get_fallback_quote():
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
-        return data.get("c") or data.get("pc")
+        return data.get("c") or data.get("pc") or None
+    except Exception:
+        return None
+
+
+def get_index_quote(symbol):
+    """Fetch an index quote from CBOE's public delayed-quotes CDN.
+
+    Finnhub requires a paid subscription for index symbols, so indexes are
+    read from CBOE's keyless public CDN instead (data is ~15 min delayed).
+    """
+    try:
+        url = (
+            "https://cdn-api.cboe.com/api/global/delayed_quotes/"
+            f"quotes/_{symbol[1:]}.json"
+        )
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        price = response.json().get("data", {}).get("current_price")
+        return price if price and price > 0 else None
     except Exception:
         return None
 
@@ -281,6 +304,7 @@ def run_volatility_monitor(
     fetch_price,
     interval,
     is_crypto=False,
+    is_index=False,
 ):
     """Run the volatility monitoring loop."""
     price_history, min_prices, max_prices = deque(), deque(), deque()
@@ -331,7 +355,7 @@ def run_volatility_monitor(
                         f"(vol {bar} / {time_mins}min) ({time_str})"
                     )
         else:
-            if not is_crypto:
+            if not is_crypto and not is_index:
                 hours = hours_until_market_open()
                 print(f"{symbol}: Market closed, " f"~{hours}h until open ({time_str})")
             else:
@@ -349,6 +373,7 @@ def run_price_monitor(
     fetch_price,
     interval,
     is_crypto=False,
+    is_index=False,
 ):
     """Run the price threshold monitoring loop."""
     triggered = False
@@ -415,7 +440,7 @@ def run_price_monitor(
             last_price = price
 
         else:
-            if not is_crypto:
+            if not is_crypto and not is_index:
                 hours = hours_until_market_open()
                 print(f"{symbol}: Market closed, " f"~{hours}h until open ({time_str})")
             else:
@@ -487,8 +512,10 @@ def main():
 
     symbol, mode, target, wav = parse_args()
     symbol_upper = symbol.upper()
+    symbol_upper = INDEX_ALIASES.get(symbol_upper, symbol_upper)
     cg_id = CRYPTO.get(symbol_upper)
     is_crypto = bool(cg_id)
+    is_index = symbol_upper.startswith("^")
 
     active_interval = CRYPTO_INTERVAL if is_crypto else STOCK_INTERVAL
 
@@ -496,6 +523,11 @@ def main():
 
         def fetch_price():
             return get_crypto_price_coingecko(cg_id)
+
+    elif is_index:
+
+        def fetch_price():
+            return get_index_quote(symbol_upper)
 
     else:
         api_key = os.getenv("FINNHUB_API_KEY")
@@ -526,7 +558,7 @@ def main():
         direction = "above or at" if mode == "above" else "below or at"
         print(f"Alert when price goes {direction} ${target:,}")
 
-    if is_crypto:
+    if is_crypto or is_index:
         print(f"Polling every {active_interval}s.")
     else:
         print(f"Polling every {active_interval}s when websocket is " "unavailable.")
@@ -545,6 +577,7 @@ def main():
                 fetch_price,
                 active_interval,
                 is_crypto,
+                is_index,
             )
         else:
             run_price_monitor(
@@ -556,6 +589,7 @@ def main():
                 fetch_price,
                 active_interval,
                 is_crypto,
+                is_index,
             )
     except KeyboardInterrupt:
         print("\nStopped.")
